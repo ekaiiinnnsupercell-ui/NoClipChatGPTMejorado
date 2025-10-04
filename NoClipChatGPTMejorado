@@ -1,0 +1,139 @@
+-- LocalScript en StarterPlayerScripts
+local player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local noclipActivo = false
+local minimizado = false
+
+-- Crear GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "NoClipGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 110)
+mainFrame.Position = UDim2.new(0, 25, 0.4, -55)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+-- Bordes redondeados
+local corner = Instance.new("UICorner", mainFrame)
+corner.CornerRadius = UDim.new(0, 10)
+
+-- Degradado sutil de fondo
+local gradient = Instance.new("UIGradient", mainFrame)
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 55)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 25))
+}
+
+-- Sombra suave
+local shadow = Instance.new("ImageLabel")
+shadow.Name = "Shadow"
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageTransparency = 0.4
+shadow.Size = UDim2.new(1, 20, 1, 20)
+shadow.Position = UDim2.new(0, -10, 0, -10)
+shadow.BackgroundTransparency = 1
+shadow.ZIndex = 0
+shadow.Parent = mainFrame
+
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 0, 35)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "✨ NoClip Control"
+title.TextColor3 = Color3.fromRGB(200, 200, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = mainFrame
+
+-- Botón minimizar
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -35, 0, 3)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 75, 90)
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 20
+minimizeBtn.AutoButtonColor = false
+minimizeBtn.Parent = mainFrame
+
+local minCorner = Instance.new("UICorner", minimizeBtn)
+minCorner.CornerRadius = UDim.new(1, 0)
+
+-- Botón principal
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 180, 0, 40)
+toggleBtn.Position = UDim2.new(0.5, -90, 0, 50)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+toggleBtn.Text = "🔒 Activar NoClip"
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Font = Enum.Font.Gotham
+toggleBtn.TextSize = 16
+toggleBtn.AutoButtonColor = false
+toggleBtn.Parent = mainFrame
+
+local btnCorner = Instance.new("UICorner", toggleBtn)
+btnCorner.CornerRadius = UDim.new(0, 8)
+
+local btnStroke = Instance.new("UIStroke", toggleBtn)
+btnStroke.Thickness = 1.5
+btnStroke.Color = Color3.fromRGB(180, 180, 255)
+btnStroke.Transparency = 0.4
+
+-- Función NoClip
+local function setNoClip(state)
+	noclipActivo = state
+	if noclipActivo then
+		toggleBtn.Text = "✅ Desactivar NoClip"
+		TweenService:Create(toggleBtn, TweenInfo.new(0.3), {
+			BackgroundColor3 = Color3.fromRGB(90, 180, 100)
+		}):Play()
+	else
+		toggleBtn.Text = "🔒 Activar NoClip"
+		TweenService:Create(toggleBtn, TweenInfo.new(0.3), {
+			BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+		}):Play()
+	end
+end
+
+-- Botón activar/desactivar
+toggleBtn.MouseButton1Click:Connect(function()
+	setNoClip(not noclipActivo)
+end)
+
+-- Botón minimizar con animación
+minimizeBtn.MouseButton1Click:Connect(function()
+	minimizado = not minimizado
+	if minimizado then
+		TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 220, 0, 40)}):Play()
+		toggleBtn.Visible = false
+		minimizeBtn.Text = "+"
+	else
+		TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 220, 0, 110)}):Play()
+		task.wait(0.3)
+		toggleBtn.Visible = true
+		minimizeBtn.Text = "-"
+	end
+end)
+
+-- Loop NoClip
+RunService.Stepped:Connect(function()
+	if noclipActivo and player.Character and player.Character:FindFirstChild("Humanoid") then
+		for _, part in pairs(player.Character:GetDescendants()) do
+			if part:IsA("BasePart") and part.CanCollide == true then
+				part.CanCollide = false
+			end
+		end
+	end
+end)
